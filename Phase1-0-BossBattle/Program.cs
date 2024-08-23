@@ -1,107 +1,57 @@
-﻿int commandCount = 0;
-Robot robot = new Robot();
-Console.WriteLine("You are to enter 3 commands out of the options: on, off, north, south, west, east");
+﻿int round = 1, manticoreHealth = 10, cityHealth = 15, manticoreDistance;
 
-while (commandCount < 3)
+GetManticoreDistance();
+Console.Clear();
+Console.WriteLine("Player 2, it is your turn");
+
+while (manticoreHealth > 0 && cityHealth > 0)
 {
-    Console.Write($"Enter command {commandCount + 1}: ");
-    string input = Console.ReadLine();
-
-    switch (input)
-    {
-        case "on":
-            robot.Commands[commandCount] = new OnCommand();
-            break;
-        case "off":
-            robot.Commands[commandCount] = new OffCommand();
-            break;
-        case "north":
-            robot.Commands[commandCount] = new NorthCommand();
-            break;
-        case "south":
-            SouthCommand south = new SouthCommand();
-            robot.Commands[commandCount] = south;
-            break;
-        case "west":
-            WestCommand west = new WestCommand();
-            robot.Commands[commandCount] = west;
-            break;
-        case "east":
-            EastCommand east = new EastCommand();
-            robot.Commands[commandCount] = east;
-            break;
-        default:
-            Console.WriteLine("Error, enter commands: on, off, north, south, west or east only");
-            break;
-    }
-    commandCount++;
+    Console.WriteLine("_____________________________________________________________________________");
+    Console.WriteLine($"STATUS: Round: {round}  City: {cityHealth}  Manticore: {manticoreHealth}");
+    Console.WriteLine($"The cannon is expected to deal {getDamage()} this round.");
+    Console.Write("Enter desired cannon range: ");
+    int range = int.Parse(Console.ReadLine());
+    getCannonEffect(range);
+    if (manticoreHealth != 0) cityHealth--;
+    round++;
 }
 
-
-robot.Run();
+getWinner();
 
 Console.ReadLine();
 
-public class Robot
+int getDamage()
 {
-    public int X { get; set; }
-    public int Y { get; set; }
-    public bool IsPowered { get; set; } = false;
-    public IRobotCommand?[] Commands { get; } = new IRobotCommand?[3];
-    public void Run()
+    if (round % 3 == 0 && round % 5 == 0) return 10;
+    if (round % 3 == 0 || round % 5 == 0) return 3;
+    else return 1;
+}
+
+void getCannonEffect(int range)
+{
+    if (range == manticoreDistance)
     {
-        foreach (IRobotCommand? command in Commands)
-        {
-            command?.Run(this);
-            Console.WriteLine($"[{X} {Y} {IsPowered}]");
-        }
+        manticoreHealth -= getDamage();
+        Console.WriteLine("That round was a DIRECT HIT!");
+    }
+    else if (range > manticoreDistance) Console.WriteLine("That round OVERSHOT the target.");
+    else Console.WriteLine("That round FELL SHORT of the target.");
+}
+
+int GetManticoreDistance()
+{
+    while (true)
+    {
+        Console.Write("Player 1, how far away from the city do you want to station the manticore? ");
+        manticoreDistance = int.Parse(Console.ReadLine());
+        if (manticoreDistance >= 0 && manticoreDistance <= 100)
+            return manticoreDistance;
+        else Console.Write("Enter a value between 0 and 100");
     }
 }
 
-public interface IRobotCommand
+void getWinner()
 {
-    void Run(Robot robot);
-}
-
-public class OnCommand : IRobotCommand
-{
-    public void Run(Robot robot)
-    {
-        robot.IsPowered = true;
-    }
-}
-public class OffCommand : IRobotCommand
-{
-    public void Run(Robot robot)
-    {
-        robot.IsPowered = false;
-    }
-}
-public class NorthCommand : IRobotCommand
-{
-    public void Run(Robot robot)
-    {
-        if (robot.IsPowered) robot.Y += 1;
-    }
-}
-public class SouthCommand : IRobotCommand
-{
-    public void Run(Robot robot)
-    {
-        if (robot.IsPowered) robot.Y -= 1;
-    }
-}
-public class WestCommand : IRobotCommand
-{
-    public void Run(Robot robot)
-    {
-        if (robot.IsPowered) robot.X -= 1;
-    }
-}
-public class EastCommand : IRobotCommand
-{
-    public void Run(Robot robot)
-    {
-        if (robot.IsPowered) robot.X += 1;
-    }
+    if (manticoreHealth <= 0) Console.WriteLine("\n\nThe Manticore has been destroyed! The city of consolas had been saved!");
+    if (cityHealth <= 0) Console.WriteLine("\n\nThe city of Consolas had been annihilated!");
 }
